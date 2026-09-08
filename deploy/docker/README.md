@@ -72,3 +72,12 @@ docker compose up -d
 
 The persistent `data` directories are not replaced when the image is rebuilt.
 
+## Build troubleshooting
+
+The Docker build deliberately excludes the source repository's `.git` directory because it can be very large. The builder creates a disposable Git repository so VS Code's `postinstall` hook can write its repository-local settings. If an older checkout fails at `git config pull.rebase merges` with `fatal: not in a git directory`, pull the latest Dockerfile and rebuild:
+
+```bash
+git pull
+cd deploy/docker
+docker compose build
+```

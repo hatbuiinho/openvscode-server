@@ -24,7 +24,13 @@ ENV BUILD_SOURCEVERSION=${BUILD_SOURCEVERSION} \
 	ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
 	PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
-RUN npm ci
+# VS Code's postinstall writes repository-local Git settings. The real .git
+# directory is deliberately excluded from the Docker context because it is
+# large, so create a disposable repository for that hook.
+RUN --mount=type=cache,target=/root/.npm \
+	git init --quiet \
+	&& npm ci \
+	&& rm -rf .git
 
 RUN case "${TARGETARCH}" in \
 		amd64) vscode_arch=x64 ;; \
