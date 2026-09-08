@@ -1,0 +1,33 @@
+name: ${COMPOSE_PROJECT_NAME:-openvscode-codex}
+
+services:
+  openvscode:
+    image: ${OPENVSCODE_IMAGE:-openvscode-codex:local}
+    container_name: ${OPENVSCODE_CONTAINER_NAME:-openvscode-codex}
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        BUILD_SOURCEVERSION: ${BUILD_SOURCEVERSION:-0000000000000000000000000000000000000000}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+    init: true
+    restart: unless-stopped
+    environment:
+      OPENVSCODE_CONNECTION_TOKEN_FILE: /run/secrets/openvscode_connection_token
+    secrets:
+      - openvscode_connection_token
+    volumes:
+      - ${OPENVSCODE_HOME_PATH:-./data/home}:/home/openvscode-server
+      - ${OPENVSCODE_WORKSPACE_PATH:-./data/workspace}:/home/workspace
+    networks:
+      - nginx_network
+
+secrets:
+  openvscode_connection_token:
+    file: ${OPENVSCODE_TOKEN_FILE:-./secrets/connection-token}
+
+networks:
+  nginx_network:
+    external: true
+    name: ${NGINX_NETWORK:-nginx_network}

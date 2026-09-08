@@ -1,0 +1,15 @@
+.git
+.build
+.cache
+.vscode-test
+node_modules
+out
+out-*
+**/node_modules
+**/out
+coverage
+*.log
+
+deploy/docker/data
+deploy/docker/secrets
+

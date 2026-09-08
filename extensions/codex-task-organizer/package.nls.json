@@ -1,0 +1,19 @@
+{
+	"displayName": "Codex Task Organizer",
+	"description": "Organize Codex chat sessions into projects without changing their conversation context.",
+	"view.projects": "Codex Projects",
+	"view.welcome": "No matching Codex tasks were found.\n[Refresh](command:codexTaskOrganizer.refresh) or [create a project](command:codexTaskOrganizer.createProject).",
+	"command.createProject": "Codex Projects: Create Project",
+	"command.refresh": "Codex Projects: Refresh",
+	"command.openTask": "Open Task as Editor",
+	"command.renameProject": "Rename Project...",
+	"command.deleteProject": "Delete Project...",
+	"command.moveTask": "Move Task to Project...",
+	"command.renameTask": "Rename Task...",
+	"command.resetTaskName": "Reset Task Name",
+	"command.setTaskStatus": "Set Task Status...",
+	"configuration.title": "Codex Task Organizer",
+	"configuration.providerFilter": "Case-insensitive text used to match a chat session provider ID or label. Leave empty to show every provider.",
+	"configuration.showArchived": "Show archived chat sessions in Codex Projects.",
+	"configuration.refreshInterval": "Number of seconds between automatic session refreshes. Set to 0 to disable automatic refresh."
+}

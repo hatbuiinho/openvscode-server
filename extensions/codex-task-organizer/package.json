@@ -1,0 +1,163 @@
+{
+  "name": "codex-task-organizer",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "publisher": "openvscode",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "main": "./out/extension.js",
+  "enabledApiProposals": [
+    "chatSessionsProvider"
+  ],
+  "activationEvents": [
+    "onView:codexTaskOrganizer.projects"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "views": {
+      "agentSessions": [
+        {
+          "id": "codexTaskOrganizer.projects",
+          "name": "%view.projects%",
+          "icon": "$(project)",
+          "contextualTitle": "%view.projects%"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "codexTaskOrganizer.projects",
+        "contents": "%view.welcome%"
+      }
+    ],
+    "commands": [
+      {
+        "command": "codexTaskOrganizer.createProject",
+        "title": "%command.createProject%",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "codexTaskOrganizer.refresh",
+        "title": "%command.refresh%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "codexTaskOrganizer.openTask",
+        "title": "%command.openTask%",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "codexTaskOrganizer.renameProject",
+        "title": "%command.renameProject%"
+      },
+      {
+        "command": "codexTaskOrganizer.deleteProject",
+        "title": "%command.deleteProject%"
+      },
+      {
+        "command": "codexTaskOrganizer.moveTask",
+        "title": "%command.moveTask%"
+      },
+      {
+        "command": "codexTaskOrganizer.renameTask",
+        "title": "%command.renameTask%"
+      },
+      {
+        "command": "codexTaskOrganizer.resetTaskName",
+        "title": "%command.resetTaskName%"
+      },
+      {
+        "command": "codexTaskOrganizer.setTaskStatus",
+        "title": "%command.setTaskStatus%"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "codexTaskOrganizer.createProject",
+          "when": "view == codexTaskOrganizer.projects",
+          "group": "navigation@1"
+        },
+        {
+          "command": "codexTaskOrganizer.refresh",
+          "when": "view == codexTaskOrganizer.projects",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "codexTaskOrganizer.openTask",
+          "when": "view == codexTaskOrganizer.projects && (viewItem == codexTaskOrganizer.task || viewItem == codexTaskOrganizer.taskCustomName)",
+          "group": "navigation@1"
+        },
+        {
+          "command": "codexTaskOrganizer.renameTask",
+          "when": "view == codexTaskOrganizer.projects && (viewItem == codexTaskOrganizer.task || viewItem == codexTaskOrganizer.taskCustomName)",
+          "group": "1_edit@1"
+        },
+        {
+          "command": "codexTaskOrganizer.resetTaskName",
+          "when": "view == codexTaskOrganizer.projects && viewItem == codexTaskOrganizer.taskCustomName",
+          "group": "1_edit@2"
+        },
+        {
+          "command": "codexTaskOrganizer.moveTask",
+          "when": "view == codexTaskOrganizer.projects && (viewItem == codexTaskOrganizer.task || viewItem == codexTaskOrganizer.taskCustomName)",
+          "group": "1_edit@3"
+        },
+        {
+          "command": "codexTaskOrganizer.setTaskStatus",
+          "when": "view == codexTaskOrganizer.projects && (viewItem == codexTaskOrganizer.task || viewItem == codexTaskOrganizer.taskCustomName)",
+          "group": "1_edit@4"
+        },
+        {
+          "command": "codexTaskOrganizer.renameProject",
+          "when": "view == codexTaskOrganizer.projects && viewItem == codexTaskOrganizer.project",
+          "group": "1_edit@1"
+        },
+        {
+          "command": "codexTaskOrganizer.deleteProject",
+          "when": "view == codexTaskOrganizer.projects && viewItem == codexTaskOrganizer.project",
+          "group": "1_edit@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "%configuration.title%",
+      "properties": {
+        "codexTaskOrganizer.providerFilter": {
+          "type": "string",
+          "default": "codex",
+          "description": "%configuration.providerFilter%",
+          "scope": "window"
+        },
+        "codexTaskOrganizer.showArchived": {
+          "type": "boolean",
+          "default": false,
+          "description": "%configuration.showArchived%",
+          "scope": "window"
+        },
+        "codexTaskOrganizer.refreshInterval": {
+          "type": "number",
+          "default": 15,
+          "minimum": 0,
+          "description": "%configuration.refreshInterval%",
+          "scope": "window"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "npx gulp compile-extension:codex-task-organizer",
+    "watch": "npx gulp watch-extension:codex-task-organizer"
+  }
+}

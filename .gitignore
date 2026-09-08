@@ -26,3 +26,6 @@ product.overrides.json
 .vscode-test
 vscode-telemetry-docs/
 test-output.json
+/deploy/docker/.env
+/deploy/docker/data/
+/deploy/docker/secrets/
