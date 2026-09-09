@@ -1,14 +1,58 @@
-# Docker Compose deployment
+# Docker image publishing and deployment
 
-This deployment builds the current fork into a production OpenVSCode Server image. It includes the thin core bridge and the `codex-task-organizer` built-in extension.
+The production image is built by GitHub Actions and pushed to Docker Hub. The Ubuntu server only pulls and runs the image; it never compiles OpenVSCode.
 
-## Server preparation
+## 1. Configure Docker Hub
 
-Run from the repository root on the Ubuntu server:
+Create a Docker Hub repository named `openvscode-codex`, then create an access token with Read & Write permission.
+
+In the GitHub repository, open **Settings → Secrets and variables → Actions** and add:
+
+- Variable `DOCKERHUB_USERNAME`: Docker Hub username.
+- Secret `DOCKERHUB_TOKEN`: Docker Hub access token.
+- Optional variable `DOCKERHUB_REPOSITORY`: image repository name; defaults to `openvscode-codex`.
+- Optional variable `DOCKER_PLATFORMS`: defaults to `linux/amd64`. Use `linux/arm64` for an ARM64 server.
+- Optional variable `OPENVSCODE_BUILD_RUNNER`: GitHub Actions runner label; defaults to `ubuntu-latest`.
+
+The OpenVSCode build can use about 14 GB of memory. A public repository's standard Linux runner currently has 16 GB RAM. For a private repository, configure a larger runner and set its label in `OPENVSCODE_BUILD_RUNNER`.
+
+## 2. Publish the image
+
+Run **Actions → Publish OpenVSCode Docker image → Run workflow**. The default manual tag is `latest`.
+
+Alternatively, publish a version by pushing a Git tag:
 
 ```bash
-cd deploy/docker
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+A version build publishes these tags:
+
+- `openvscode-codex:latest`
+- `openvscode-codex:0.1.0`
+- `openvscode-codex:0.1`
+- `openvscode-codex:sha-<commit>`
+
+Build layers are cached in the `buildcache` tag on Docker Hub.
+
+## 3. Prepare the Ubuntu server
+
+Run from this directory on the server:
+
+```bash
 cp .env.example .env
+```
+
+Edit `.env` and set the published image:
+
+```dotenv
+OPENVSCODE_IMAGE=docker.io/YOUR_DOCKERHUB_USERNAME/openvscode-codex:latest
+```
+
+Create persistent storage and a connection token:
+
+```bash
 mkdir -p data/home data/workspace secrets
 openssl rand -hex 32 > secrets/connection-token
 chmod 600 secrets/connection-token
@@ -16,31 +60,32 @@ sudo chown -R 1000:1000 data
 docker network inspect nginx_network >/dev/null
 ```
 
-If the host user uses another UID/GID, update `USER_UID`, `USER_GID`, and the ownership of `data` to match.
-
-## Build and start
+For a private Docker Hub repository, log in once on the server:
 
 ```bash
-export BUILD_SOURCEVERSION="$(git rev-parse HEAD)"
-docker compose build
+docker login
+```
+
+## 4. Pull and start
+
+```bash
+docker compose pull
 docker compose up -d
 docker compose ps
 docker compose logs -f openvscode
 ```
 
-The image is attached to the external `nginx_network` network and does not publish port 3000 on the host. The reverse proxy can reach it at `http://openvscode-codex:3000`.
+The service is attached to external network `nginx_network`, does not publish port 3000 on the host, and is reachable by the Nginx container at `http://openvscode-codex:3000`.
 
-The first browser URL must include the connection token:
+Open the first browser session with:
 
 ```text
 https://ide.example.com/?tkn=VALUE_FROM_secrets/connection-token
 ```
 
-The connection token is defense-in-depth for one OpenVSCode instance. It is not the planned admin/user account system.
+The connection token protects one OpenVSCode instance. It is not the planned admin/user account system.
 
 ## Nginx proxy settings
-
-Use the following settings in the relevant HTTPS virtual host:
 
 ```nginx
 location / {
@@ -57,27 +102,17 @@ location / {
 }
 ```
 
-Install or sign in to the original Codex extension after opening the server. Extension data, Codex data, credentials, and the organizer's project metadata persist under `data/home`; source workspaces persist under `data/workspace`.
+Install or sign in to the original Codex extension after opening the server. Extension data, Codex data, credentials, and organizer metadata persist under `data/home`; source workspaces persist under `data/workspace`.
 
 ## Updating
 
-After pulling or rebasing a newer version:
+After a successful image publishing workflow:
 
 ```bash
 cd deploy/docker
-export BUILD_SOURCEVERSION="$(git rev-parse HEAD)"
-docker compose build --pull
+docker compose pull
 docker compose up -d
+docker image prune -f
 ```
 
-The persistent `data` directories are not replaced when the image is rebuilt.
-
-## Build troubleshooting
-
-The Docker build deliberately excludes the source repository's `.git` directory because it can be very large. The builder creates a disposable Git repository so VS Code's `postinstall` hook can write its repository-local settings. If an older checkout fails at `git config pull.rebase merges` with `fatal: not in a git directory`, pull the latest Dockerfile and rebuild:
-
-```bash
-git pull
-cd deploy/docker
-docker compose build
-```
+The persistent `data` directories are not replaced.

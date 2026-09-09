@@ -2,15 +2,9 @@ name: ${COMPOSE_PROJECT_NAME:-openvscode-codex}
 
 services:
   openvscode:
-    image: ${OPENVSCODE_IMAGE:-openvscode-codex:local}
+    image: ${OPENVSCODE_IMAGE:?Set OPENVSCODE_IMAGE in .env}
     container_name: ${OPENVSCODE_CONTAINER_NAME:-openvscode-codex}
-    build:
-      context: ../..
-      dockerfile: deploy/docker/Dockerfile
-      args:
-        BUILD_SOURCEVERSION: ${BUILD_SOURCEVERSION:-0000000000000000000000000000000000000000}
-        USER_UID: ${USER_UID:-1000}
-        USER_GID: ${USER_GID:-1000}
+    pull_policy: always
     init: true
     restart: unless-stopped
     environment:
