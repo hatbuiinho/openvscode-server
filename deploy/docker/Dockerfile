@@ -19,6 +19,7 @@ COPY . .
 
 ARG TARGETARCH
 ARG BUILD_SOURCEVERSION=0000000000000000000000000000000000000000
+ARG BUILD_NODE_MAX_OLD_SPACE_SIZE=4096
 
 ENV BUILD_SOURCEVERSION=${BUILD_SOURCEVERSION} \
 	ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
@@ -32,13 +33,24 @@ RUN --mount=type=cache,target=/root/.npm \
 	&& npm ci \
 	&& rm -rf .git
 
-RUN case "${TARGETARCH}" in \
+# Keep every phase in its own Node process so its heap is released before the
+# next phase. Omitting mangling and bundle minification substantially lowers
+# peak memory usage at the cost of a larger runtime image.
+RUN set -eu; \
+	case "${TARGETARCH}" in \
 		amd64) vscode_arch=x64 ;; \
 		arm64) vscode_arch=arm64 ;; \
 		*) echo "Unsupported Docker architecture: ${TARGETARCH}" >&2; exit 1 ;; \
-	esac \
-	&& npm run gulp -- "vscode-reh-web-linux-${vscode_arch}-min" \
-	&& mv "/vscode-reh-web-linux-${vscode_arch}" /opt/openvscode-server
+	esac; \
+	run_gulp() { \
+		node --max-old-space-size="${BUILD_NODE_MAX_OLD_SPACE_SIZE}" ./node_modules/gulp/bin/gulp.js "$@"; \
+	}; \
+	run_gulp compile-build-without-mangling; \
+	run_gulp compile-non-native-extensions-build; \
+	run_gulp compile-extension-media-build; \
+	run_gulp bundle-vscode-reh-web; \
+	run_gulp "vscode-reh-web-linux-${vscode_arch}-ci"; \
+	mv "/vscode-reh-web-linux-${vscode_arch}" /opt/openvscode-server
 
 FROM buildpack-deps:bookworm-curl AS runtime
 

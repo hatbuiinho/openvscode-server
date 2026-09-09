@@ -13,8 +13,9 @@ In the GitHub repository, open **Settings → Secrets and variables → Actions*
 - Optional variable `DOCKERHUB_REPOSITORY`: image repository name; defaults to `openvscode-codex`.
 - Optional variable `DOCKER_PLATFORMS`: defaults to `linux/amd64`. Use `linux/arm64` for an ARM64 server.
 - Optional variable `OPENVSCODE_BUILD_RUNNER`: GitHub Actions runner label; defaults to `ubuntu-latest`.
+- Optional variable `BUILD_NODE_MAX_OLD_SPACE_SIZE`: maximum heap in MB for each build phase; defaults to `4096`.
 
-The OpenVSCode build can use about 14 GB of memory. A public repository's standard Linux runner currently has 16 GB RAM. For a private repository, configure a larger runner and set its label in `OPENVSCODE_BUILD_RUNNER`.
+The Dockerfile uses a low-memory pipeline: it disables symbol mangling and bundle minification, and runs each phase in a separate Node process. This produces a larger image but avoids the previous 14 GB peak. If a private repository's standard runner still runs out of memory, configure a larger runner through `OPENVSCODE_BUILD_RUNNER`.
 
 ## 2. Publish the image
 

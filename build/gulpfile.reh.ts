@@ -449,6 +449,7 @@ function tweakProductForServerWeb(product: typeof import('../product.json')) {
 			}
 		)
 	));
+	gulp.task(bundleTask);
 
 	const minifyTask = task.define(`minify-vscode-${type}`, task.series(
 		bundleTask,

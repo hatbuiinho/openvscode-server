@@ -82,6 +82,6 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: |
             BUILD_SOURCEVERSION=${{ github.sha }}
+            BUILD_NODE_MAX_OLD_SPACE_SIZE=${{ vars.BUILD_NODE_MAX_OLD_SPACE_SIZE || '4096' }}
           cache-from: type=registry,ref=docker.io/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=docker.io/${{ env.IMAGE_NAME }}:buildcache,mode=max
-
